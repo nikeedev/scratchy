@@ -10,6 +10,8 @@ Well, it all begins with that Scratch has an authentication server on `https://s
 
 Sending that information about you, the login server will return a token as a cookie. That token is long, but it's functionality is to describe Scratch, that **that** token identifies you as *you (username)*. It's very important that you don't show it to anybody, or else they own a quarter of your account, and they can see e.t. your email.
 
+*more to be told...*
+
 <!-- lying on `https://scratch.mit.edu/session`. You can -->
 
 

@@ -22,4 +22,8 @@ bin/
 # vweb and database
 *.db
 *.js
-response.log
+
+# scratch_user debug files
+login_response.json
+session_response.json
+api_response.json

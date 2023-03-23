@@ -10,9 +10,10 @@ Well, it all begins with that Scratch has an authentication server on `https://s
 
 Sending that information about you, the login server will return a token as a cookie. That token is long, but it's functionality is to describe Scratch, that **that** token identifies you as *you (username)*. It's very important that you don't show it to anybody, or else they own a quarter of your account, and they can see e.g. your email or even your other token, which also exposes more control over your account, so don't save or publish username or password of your scratch account.
 
-Now as the program knows your token, it can be used to do multiple things. Many of you heard about ScratchAttach (not advertised), it uses same method, by getting your password and username, and using it to get the token. That token like ScratchAttach, uses it for example to identify that your are "the scratch user" with name "name", and you are authorized to modify, delete, rename, and create cloud variables, as long as you are the owner of the project. That's how ScratchAttach including to other stuff there works. I did my version of cloud variable changing i used same way to authenticate using that token method with login page. 
+Now as the program knows your token, it can be used to do multiple things. Many of you heard about ScratchAttach (not advertised), it uses same method, by getting your password and username, and using it to get the token. That token like ScratchAttach, uses it for example to identify that your are "the scratch user" with name "name", and you are authorized to modify, delete, rename, and create cloud variables, as long as you are the owner of the project. That's how ScratchAttach including to other stuff there works. I did my version of cloud variable changing i used same way to authenticate using that token method with login page, and now i made that again just this time i retrieve session info.
+#
 
-----
+<br>
 
 <!-- lying on `https://scratch.mit.edu/session`. You can -->
 
@@ -22,7 +23,7 @@ Now as the program knows your token, it can be used to do multiple things. Many 
 
 # To-Do:
 
-- [ ] Update the headers for about me and working on.
+- [x] Update the headers for about me and working on.
 - [ ] Add country and time the user joined.
 - [ ] Create also new UI for user session information.
 

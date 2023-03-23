@@ -114,6 +114,7 @@ fn (info ApiInfo) beautify() ! {
 	println(term.bold('Scratchteam: ' +
 		if info.scratchteam { term.green('true') } else { term.red('false') } + ' (obviously)'))
 	// println(term.bright_white('Joined: ' + time.parse_iso8601(info.history.joined)!.format()))
+	println(term.bright_magenta('Country: ${info.profile.country}'))
 	println('\n')
 	println(term.bold('About ' + info.username))
 	println('\n' +term.header(term.bold('"About me":'), '=') + '\n')

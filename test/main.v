@@ -80,22 +80,21 @@ fn main() {
 	my_cookie := sessionid_response.cookies()[0].value
 	println(sessionid_response.cookies())
 
-	mut status_conf := http.FetchConfig{
-		url: 'https://scratch.mit.edu/session/'
+	mut message_conf := http.FetchConfig{
+		url: 'https://scratch.mit.edu/users/${user.username}/messages/count'
 		data: ''
 		method: .get
 	}
 
-	status_conf.header.add_custom('cookie', 'scratchsessionsid=${my_cookie};')!
-	status_conf.header.add_custom('X-Requested-With', 'XMLHttpRequest')!
-	status_conf.header.add_custom('Referer', 'https://scratch.mit.edu/session/')!
-	status_conf.header.add_custom('Content-Type', 'application/json')!
+	message_conf.header.add_custom('cookie', 'scratchsessionsid=${my_cookie};')!
+	message_conf.header.add_custom('X-Requested-With', 'XMLHttpRequest')!
+	message_conf.header.add_custom('Referer', 'https://scratch.mit.edu/session/')!
+	message_conf.header.add_custom('Content-Type', 'application/json')!
 
-	mut session_response := http.fetch(status_conf)!
-	// println(session_response.body)
-	os.write_file('session_response.json', session_response.body)!
-	session := json.decode(SessionInfo, session_response.body)!
-	println('Cookies for session: ${session_response.cookies()}')
+	mut message_response := http.fetch(message_conf)!
+	// println(message_response.body)
+	os.write_file('msg_response.json', message_response.body)!
+	println('${message_response.body}')
 
 	println('\n')
 }

@@ -24,6 +24,4 @@ bin/
 *.js
 
 # scratch_user debug files
-login_response.json
-session_response.json
-api_response.json
+*_response.json

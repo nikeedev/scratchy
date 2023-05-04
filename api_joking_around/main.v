@@ -55,9 +55,15 @@ struct SessionInfo {
 ///
 
 fn main() {
-	vdotenv.load()
+	getusername := os.input("Write your username: ")
+	getpassword := os.input_password("Write your user's password: ")!
 
-	user := User{username: os.getenv("USERNAMEenv"), password: os.getenv("PASSWORDenv")}
+	user := User{
+		username: getusername
+		password: getpassword
+	}
+
+	// user := User{username: os.getenv("USERNAMEenv"), password: os.getenv("PASSWORDenv")}
 
 	mut login_conf := http.FetchConfig{
 		url: 'https://scratch.mit.edu/login/'
@@ -71,30 +77,31 @@ fn main() {
 	login_conf.header.add_custom('X-CSRFToken', 'a')!
 	login_conf.header.add_custom('Referer', 'https://scratch.mit.edu')!
 	login_conf.header.add_custom('Cookie', 'scratchcsrftoken=a;')!
-	login_conf.header.add_custom('User-Agent', 'V 0.3.3 (https://github.com/nikeedev/scratch_user)')!
+	login_conf.header.add_custom('User-Agent', 'scratch_user 1.0')!
 	login_conf.header.add_custom('Content-Type', 'application/json')!
 
 	mut sessionid_response := http.fetch(login_conf)!
 	// println(sessionid_response)
 	os.write_file('login_response.json', sessionid_response.body)!
 	my_cookie := sessionid_response.cookies()[0].value
-	println(sessionid_response.cookies())
+	println(my_cookie)
 
 	mut message_conf := http.FetchConfig{
-		url: 'https://scratch.mit.edu/users/${user.username}/messages/count'
+		url: 'https://api.scratch.mit.edu/users/${user.username}/following/'
 		data: ''
 		method: .get
 	}
 
-	message_conf.header.add_custom('cookie', 'scratchsessionsid=${my_cookie};')!
 	message_conf.header.add_custom('X-Requested-With', 'XMLHttpRequest')!
-	message_conf.header.add_custom('Referer', 'https://scratch.mit.edu/session/')!
+	message_conf.header.add_custom('cookie', 'scratchsessionsid=${my_cookie};')!
+	message_conf.header.add_custom('Referer', 'https://scratch.mit.edu/')!
 	message_conf.header.add_custom('Content-Type', 'application/json')!
 
 	mut message_response := http.fetch(message_conf)!
 	// println(message_response.body)
 	os.write_file('msg_response.json', message_response.body)!
-	println('${message_response.body}')
+	println(message_response.body)
+	println(message_response)
 
 	println('\n')
 }

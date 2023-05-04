@@ -81,7 +81,7 @@ fn print_session(user User) ! {
 	login_conf.header.add_custom('X-CSRFToken', 'a')!
 	login_conf.header.add_custom('Referer', 'https://scratch.mit.edu')!
 	login_conf.header.add_custom('Cookie', 'scratchcsrftoken=a;')!
-	login_conf.header.add_custom('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36')!
+	login_conf.header.add_custom('User-Agent', 'scratch_user 1.0')!
 	login_conf.header.add_custom('Content-Type', 'application/json')!
 
 	mut sessionid_response := http.fetch(login_conf)!

@@ -1,7 +1,7 @@
 Module {
-	name: 'scratch_user'
-	description: '<EOF>'
-	version: '0.0.0'
+	name: 'scratchy'
+	description: 'Get scratch user info and more!'
+	version: '0.1.0'
 	license: 'MIT'
 	dependencies: []
 }

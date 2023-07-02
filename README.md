@@ -1,4 +1,4 @@
-# Scratch user info
+# Scratchy - Get Scratch info about users or projects
 
 Using [Scratch API](https://api.scratch.mit.edu) for getting information about a user or a project
 

@@ -5,7 +5,7 @@ import term
 import time
 import json
 import os
-import zztkm.vdotenv
+// import zztkm.vdotenv
 
 /// For Authentication
 struct User {
@@ -17,14 +17,15 @@ mut:
 ///
 
 struct SessionInfo {
+pub:
 	user struct {
-		id           int
-		banned       bool
-		username     string
-		token        string
-		thumbnailUrl string
-		dateJoined   string
-		email        string
+		id            int
+		banned        bool
+		username      string
+		token         string
+		thumbnail_url string [json: 'thumbnailUrl']
+		date_joined   string [json: 'dateJoined']
+		email         string
 	}
 
 	permissions struct {
@@ -38,7 +39,7 @@ struct SessionInfo {
 		student           bool
 	}
 
-	flags struct {
+ 	flags struct {
 		must_reset_password                bool
 		must_complete_registration         bool
 		has_outstanding_email_confirmation bool
@@ -86,7 +87,7 @@ fn print_session(user User) ! {
 
 	mut sessionid_response := http.fetch(login_conf)!
 	// println(sessionid_response)
-	os.write_file('login_response.json', sessionid_response.body)!
+	// os.write_file('login_response.json', sessionid_response.body)!
 	my_cookie := sessionid_response.cookies()[0].value
 	// println(my_cookie)
 
@@ -103,48 +104,88 @@ fn print_session(user User) ! {
 
 	mut session_response := http.fetch(status_conf)!
 	// println(session_response.body)
-	os.write_file('session_response.json', session_response.body)!
+	// os.write_file('session_response.json', session_response.body)!
 	session := json.decode(SessionInfo, session_response.body)!
-	println(session)
+
+	session.beautify() !
+}
+
+fn (info SessionInfo) beautify() ! {
+	println(term.bright_green('User: ' + info.user.username + '\n'))
+	println(term.bold('Are Banned: ' +
+		if info.user.banned { term.green('true') } else { term.red('false') }))
+	println(term.bright_blue('ID: ' + info.user.id.str()))
+	println(term.bright_white('Joined: ' + time.parse_iso8601(info.user.date_joined)!.relative()))
+
+	println(term.header("Permissions:", "=") + '\n')
+	println(term.bold('Are an Admin: ' +
+		if info.permissions.admin { term.green('true') } else { term.red('false') }))
+
+	println(term.bold('Are a Scratcher: ' +
+		if info.permissions.scratcher { term.green('true') } else { term.red('false') }))
+
+	println(term.bold('Are a New Scratcher: ' +
+		if info.permissions.new_scratcher { term.green('true') } else { term.red('false') }))
+
+	println(term.bold('Are an Invited Scratcher: ' +
+		if info.permissions.invited_scratcher { term.green('true') } else { term.red('false') }))
+
+	println(term.bold('Are Social: ' +
+		if info.permissions.social { term.green('true') } else { term.red('false') }))
+
+	println(term.bold('Are an Educator: ' +
+		if info.permissions.educator { term.green('true') } else { term.red('false') }))
+
+	println(term.bold('Are an Educator "Invitee": ' +
+		if info.permissions.educator_invitee { term.green('true') } else { term.red('false') }))
+
+	println(term.bold('Are a Student: ' +
+		if info.permissions.student { term.green('true') } else { term.red('false') }))
+
+	println('\n')
 }
 
 fn (info ApiInfo) beautify() ! {
 	println(term.bright_green('User: ' + info.username + '\n'))
 	println(term.bright_blue('ID: ' + info.profile.id.str()))
-	println(term.bold('Scratchteam: ' +
+	println(term.bold('Are Scratch Team: ' +
 		if info.scratchteam { term.green('true') } else { term.red('false') } + ' (obviously)'))
 	println(term.bright_white('Joined: ' + time.parse_iso8601(info.history.joined)!.relative()))
 	println(term.bright_magenta('Country: ${info.profile.country}'))
 	println('\n')
 	println(term.bold('About ' + info.username))
-	println('\n' +term.header(term.bold('"About me":'), '=') + '\n')
+	println('\n' + term.header(term.bold('"About me":'), '=') + '\n')
 	println(info.profile.bio)
-	println('\n' + term.header("", "=") + '\n')
-	println('\n\n' +term.header(term.bold('"Working on":'), '=') + '\n')
+	println('\n' + term.header('', '=') + '\n')
+	println('\n\n' + term.header(term.bold('"Working on":'), '=') + '\n')
 	println(info.profile.status)
-	println('\n' + term.header("", "=") + '\n')
+	println('\n' + term.header('', '=') + '\n')
 }
 
 fn main() {
 	wants_session := os.input('Want to verify to show session data? (y/N) ').trim_space()
 
-	vdotenv.load()
-	getusername := os.input('Write your Scratch username: ')
+	// vdotenv.load()
+
+	get_username := os.input('Write your Scratch username: ')
+	if get_username.is_blank() {
+		println("No username were specified, aborting fetching...")
+		exit(-1)
+	}
 
 	mut user := User{}
 	if wants_session == 'y' || wants_session == 'Y' {
-		getpassword := os.input_password("Write your user's password: ")!
+		get_password := os.input_password("Write your user's password: ")!
 
 		user = User{
-			username: getusername
-			password: getpassword
+			username: get_username
+			password: get_password
 		}
 		// user := User{username: os.getenv("USERNAMEenv"), password: os.getenv("PASSWORDenv")}
-
 		print_session(user)!
 	} else {
-		user = User{
-			username: getusername
+		user = User {
+			username: get_username
 			password: ''
 		}
 	}
@@ -161,8 +202,14 @@ fn main() {
 	api_conf.header.add_custom('Content-Type', 'application/json')!
 
 	mut api_response := http.fetch(api_conf)!
+
 	// println(api_response.body)
-	os.write_file('api_response.json', api_response.body)!
+	// os.write_file('api_response.json', api_response.body)!
+
 	apis := json.decode(ApiInfo, api_response.body)!
+
+	// End:
+
+	println(term.header("", "="))
 	apis.beautify()!
 }

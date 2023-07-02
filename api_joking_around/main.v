@@ -18,13 +18,13 @@ mut:
 
 struct SessionInfo {
 	user struct {
-		id           int
-		banned       bool
-		username     string
-		token        string
-		thumbnailUrl string
-		dateJoined   string
-		email        string
+		id            int
+		banned        bool
+		username      string
+		token         string
+		thumbnail_url string [json: 'thumbnailUrl']
+		date_joined   string [json: 'dateJoined']
+		email         string
 	}
 
 	permissions struct {
@@ -87,8 +87,7 @@ fn main() {
 	println(my_cookie)
 
 	mut message_conf := http.FetchConfig{
-		url: 'https://api.scratch.mit.edu/users/${user.username}/following/'
-		data: ''
+		url: 'https://api.scratch.mit.edu/users/nikeedev/projects/819058933'
 		method: .get
 	}
 

@@ -5,7 +5,7 @@ import term
 import time
 import json
 import os
-// import zztkm.vdotenv
+import zztkm.vdotenv
 
 /// For Authentication
 struct User {
@@ -23,8 +23,8 @@ pub:
 		banned        bool
 		username      string
 		token         string
-		thumbnail_url string [json: 'thumbnailUrl']
-		date_joined   string [json: 'dateJoined']
+		thumbnail_url string @[json: 'thumbnailUrl']
+		date_joined   string @[json: 'dateJoined']
 		email         string
 	}
 
@@ -39,7 +39,7 @@ pub:
 		student           bool
 	}
 
- 	flags struct {
+	flags struct {
 		must_reset_password                bool
 		must_complete_registration         bool
 		has_outstanding_email_confirmation bool
@@ -71,8 +71,8 @@ struct ApiInfo {
 
 fn print_session(user User) ! {
 	mut login_conf := http.FetchConfig{
-		url: 'https://scratch.mit.edu/login/'
-		data: json.encode(user)
+		url:    'https://scratch.mit.edu/login/'
+		data:   json.encode(user)
 		method: .post
 	}
 
@@ -92,8 +92,7 @@ fn print_session(user User) ! {
 	// println(my_cookie)
 
 	mut status_conf := http.FetchConfig{
-		url: 'https://scratch.mit.edu/session/'
-		data: ''
+		url:    'https://scratch.mit.edu/session/'
 		method: .get
 	}
 
@@ -107,7 +106,7 @@ fn print_session(user User) ! {
 	// os.write_file('session_response.json', session_response.body)!
 	session := json.decode(SessionInfo, session_response.body)!
 
-	session.beautify() !
+	session.beautify()!
 }
 
 fn (info SessionInfo) beautify() ! {
@@ -117,7 +116,7 @@ fn (info SessionInfo) beautify() ! {
 	println(term.bright_blue('ID: ' + info.user.id.str()))
 	println(term.bright_white('Joined: ' + time.parse_iso8601(info.user.date_joined)!.relative()))
 
-	println(term.header("Permissions:", "=") + '\n')
+	println(term.header('Permissions:', '=') + '\n')
 	println(term.bold('Are an Admin: ' +
 		if info.permissions.admin { term.green('true') } else { term.red('false') }))
 
@@ -145,6 +144,29 @@ fn (info SessionInfo) beautify() ! {
 	println('\n')
 }
 
+fn print_api(user User) ! {
+	mut api_conf := http.FetchConfig{
+		url:    'https://api.scratch.mit.edu/users/${user.username}',
+		method: .get
+	}
+
+	api_conf.header.add_custom('X-Requested-With', 'XMLHttpRequest')!
+	api_conf.header.add_custom('Referer', 'https://api.scratch.mit.edu/')!
+	api_conf.header.add_custom('User-Agent', 'scratch_user/1.0')!
+	api_conf.header.add_custom('Content-Type', 'application/json')!
+	api_conf.header.add_custom('Origin', api_conf.url)!
+
+	mut api_response := http.fetch(api_conf)!
+	println("Status msg: ${api_conf.str()}")
+
+	// println(api_response.body)
+	// os.write_file('api_response.json', api_response.body)!
+
+	apis := json.decode(ApiInfo, api_response.body)!
+
+	apis.beautify()!
+}
+
 fn (info ApiInfo) beautify() ! {
 	println(term.bright_green('User: ' + info.username + '\n'))
 	println(term.bright_blue('ID: ' + info.profile.id.str()))
@@ -163,53 +185,47 @@ fn (info ApiInfo) beautify() ! {
 }
 
 fn main() {
-	wants_session := os.input('Want to verify to show session data? (y/N) ').trim_space()
+	str_wants_session := os.input('Want to verify to show session data? (y/N) ').trim_space()
+	wants_session := str_wants_session == "y" || str_wants_session == "Y"
 
-	// vdotenv.load()
-
-	get_username := os.input('Write your Scratch username: ')
-	if get_username.is_blank() {
-		println("No username were specified, aborting fetching...")
-		exit(-1)
-	}
+	vdotenv.load()
 
 	mut user := User{}
-	if wants_session == 'y' || wants_session == 'Y' {
-		get_password := os.input_password("Write your user's password: ")!
 
-		user = User{
-			username: get_username
-			password: get_password
-		}
-		// user := User{username: os.getenv("USERNAMEenv"), password: os.getenv("PASSWORDenv")}
-		print_session(user)!
+	if !os.getenv('USERNAMEenv').is_blank() && !os.getenv('PASSWORDenv').is_blank() {
+		println('Loading username and password from .env file')
+		user.username = os.getenv('USERNAMEenv')
+		user.password = os.getenv('PASSWORDenv')
 	} else {
-		user = User {
-			username: get_username
-			password: ''
+		get_username := os.input('Write your Scratch username: ')
+		if get_username.is_blank() {
+			println('No username were specified, aborting fetching...')
+			exit(0)
+		}
+
+		if wants_session {
+			get_password := os.input_password("Write your user's password: ")!
+
+			user = User{
+				username: get_username
+				password: get_password
+			}
+			// user := User{username: os.getenv("USERNAMEenv"), password: os.getenv("PASSWORDenv")}
+			// print_session(user)!
+		} else {
+			user = User{
+				username: get_username
+				password: ''
+			}
 		}
 	}
 
 	println('\n')
-	mut api_conf := http.FetchConfig{
-		url: 'https://api.scratch.mit.edu/users/${user.username}'
-		data: ''
-		method: .get
-	}
-
-	api_conf.header.add_custom('X-Requested-With', 'XMLHttpRequest')!
-	api_conf.header.add_custom('Referer', 'https://api.scratch.mit.edu/')!
-	api_conf.header.add_custom('Content-Type', 'application/json')!
-
-	mut api_response := http.fetch(api_conf)!
-
-	// println(api_response.body)
-	// os.write_file('api_response.json', api_response.body)!
-
-	apis := json.decode(ApiInfo, api_response.body)!
 
 	// End:
+	print_api(user)!
 
-	println(term.header("", "="))
-	apis.beautify()!
+	println(term.header('', '='))
+
+	print_session(user)!
 }

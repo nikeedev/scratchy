@@ -22,8 +22,8 @@ struct SessionInfo {
 		banned        bool
 		username      string
 		token         string
-		thumbnail_url string [json: 'thumbnailUrl']
-		date_joined   string [json: 'dateJoined']
+		thumbnail_url string @[json: 'thumbnailUrl']
+		date_joined   string @[json: 'dateJoined']
 		email         string
 	}
 
@@ -55,19 +55,36 @@ struct SessionInfo {
 ///
 
 fn main() {
-	getusername := os.input("Write your username: ")
-	getpassword := os.input_password("Write your user's password: ")!
+	vdotenv.load()
 
-	user := User{
-		username: getusername
-		password: getpassword
+	mut user := User{}
+
+	if !os.getenv('USERNAMEenv').is_blank() && !os.getenv('PASSWORDenv').is_blank() {
+		println('Loading username and password from .env file')
+		user.username = os.getenv('USERNAMEenv')
+		user.password = os.getenv('PASSWORDenv')
+	} else {
+		get_username := os.input('Write your Scratch username: ')
+		if get_username.is_blank() {
+			println('No username were specified, aborting fetching...')
+			exit(0)
+		}
+
+
+		get_password := os.input_password("Write your user's password: ")!
+
+		user = User{
+			username: get_username
+			password: get_password
+		}
+			// user := User{username: os.getenv("USERNAMEenv"), password: os.getenv("PASSWORDenv")}
 	}
 
 	// user := User{username: os.getenv("USERNAMEenv"), password: os.getenv("PASSWORDenv")}
 
 	mut login_conf := http.FetchConfig{
-		url: 'https://scratch.mit.edu/login/'
-		data: json.encode(user)
+		url:    'https://scratch.mit.edu/login/'
+		data:   json.encode(user)
 		method: .post
 	}
 
@@ -77,7 +94,7 @@ fn main() {
 	login_conf.header.add_custom('X-CSRFToken', 'a')!
 	login_conf.header.add_custom('Referer', 'https://scratch.mit.edu')!
 	login_conf.header.add_custom('Cookie', 'scratchcsrftoken=a;')!
-	login_conf.header.add_custom('User-Agent', 'scratch_user 1.0')!
+	login_conf.header.add_custom('User-Agent', 'scratch_user/1.0')!
 	login_conf.header.add_custom('Content-Type', 'application/json')!
 
 	mut sessionid_response := http.fetch(login_conf)!
@@ -86,15 +103,17 @@ fn main() {
 	my_cookie := sessionid_response.cookies()[0].value
 	println(my_cookie)
 
+	println("time: ${time.now().unix().str()}");
+
 	mut message_conf := http.FetchConfig{
-		url: 'https://api.scratch.mit.edu/users/nikeedev/projects/819058933'
+		url:    'https://api.scratch.mit.edu/projects/819058933?avoid_cache=${time.now().unix()}'
 		method: .get
 	}
 
-	message_conf.header.add_custom('X-Requested-With', 'XMLHttpRequest')!
-	message_conf.header.add_custom('cookie', 'scratchsessionsid=${my_cookie};')!
-	message_conf.header.add_custom('Referer', 'https://scratch.mit.edu/')!
-	message_conf.header.add_custom('Content-Type', 'application/json')!
+	// message_conf.header.add_custom('X-Requested-With', 'XMLHttpRequest')!
+	message_conf.header.add_custom('Cookie', 'scratchsessionsid=${my_cookie};')!
+	// message_conf.header.add_custom('Referer', 'https://api.scratch.mit.edu')!
+	// message_conf.header.add_custom('Content-Type', 'application/json')!
 
 	mut message_response := http.fetch(message_conf)!
 	// println(message_response.body)
